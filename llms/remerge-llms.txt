@@ -1,0 +1,21 @@
+# Remerge
+
+> Remerge is a mobile demand-side platform (DSP) specializing in app retargeting, re-engagement, and user acquisition. It is a managed advertising service (no public developer API); campaigns are run through the Remerge platform with support from its account teams.
+
+## Company
+- [Remerge](https://www.remerge.io): App retargeting and user-acquisition DSP for gaming, e-commerce, and delivery apps.
+- [Help Center](https://help.remerge.io/hc/en-us): Support and product knowledge base.
+- [Blog](https://www.remerge.io/blog-post): The latest news in mobile advertising.
+
+## Trust & Security
+- [Trust Center](https://trust.remerge.io/): ISO/IEC 27001:2022 ISMS, GDPR, CCPA, CPRA, annual third-party penetration testing (SafeBase by Drata).
+- [Vulnerability Disclosure Policy](https://www.remerge.io/remerge-vulnerability-disclosure-policy): Responsible disclosure; contact security@remerge.io (no paid bug bounty).
+
+## Legal
+- [Service Privacy Policy](https://www.remerge.io/service-privacy-policy)
+- [Website Privacy Policy](https://www.remerge.io/website-privacy-policy)
+- [Terms and Conditions](https://www.remerge.io/terms-and-conditions)
+- [Opt Out of Ads](https://www.remerge.io/opt-out-of-ads)
+
+## Code
+- [GitHub Organization](https://github.com/remerge): 103 public repositories.

@@ -1,7 +1,28 @@
 aid: remerge
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/remerge.png
 name: Remerge
-description: Remerge is a company surfaced as a portfolio company of point-nine and added to the API Evangelist
-  network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+description: >-
+  Remerge is a mobile demand-side platform (DSP) specializing in app retargeting,
+  re-engagement, and user acquisition for mobile apps. The Berlin-based company
+  (Remerge GmbH) helps advertisers in gaming, e-commerce, and delivery build
+  in-app audience segments, run programmatic re-engagement and acquisition
+  campaigns across millions of ad placements, and validate results with
+  incrementality measurement. Remerge is a managed advertising service run
+  through its platform and account teams rather than a public developer API;
+  this profile captures its identity, security posture, and legal surface. It
+  operates an ISO/IEC 27001:2022-aligned ISMS and publishes a public Trust
+  Center and vulnerability disclosure policy.
 url: https://raw.githubusercontent.com/api-evangelist/remerge/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -11,9 +32,16 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-21'
 tags:
 - Company
+- Advertising
+- AdTech
+- Mobile
+- Retargeting
+- Demand-Side Platform
+- User Acquisition
+- Marketing
 apis: []
 maintainers:
 - FN: Kin Lane
@@ -23,3 +51,30 @@ maintainers:
 common:
 - type: Website
   url: https://www.remerge.io
+- type: Support
+  url: https://help.remerge.io/hc/en-us
+- type: Blog
+  url: https://www.remerge.io/blog-post
+- type: GitHubOrganization
+  url: https://github.com/remerge
+- type: PrivacyPolicy
+  url: https://www.remerge.io/service-privacy-policy
+- type: TermsOfService
+  url: https://www.remerge.io/terms-and-conditions
+- type: TrustCenter
+  url: security/remerge-trust-center.yml
+- type: Compliance
+  url: https://trust.remerge.io/
+- type: VulnerabilityDisclosure
+  url: security/remerge-vulnerability-disclosure.yml
+- type: Security
+  url: https://www.remerge.io/remerge-vulnerability-disclosure-policy
+- type: DomainSecurity
+  url: security/remerge-domain-security.yml
+- type: LLMsTxt
+  url: llms/remerge-llms.txt
+x-enrichment:
+  date: '2026-07-21'
+  status: enriched
+  artifacts_added: 4
+  pass: local-v1

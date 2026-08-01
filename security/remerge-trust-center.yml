@@ -1,0 +1,28 @@
+generated: '2026-07-21'
+method: searched
+probe: true
+source: https://trust.remerge.io/
+url: https://trust.remerge.io/
+platform: SafeBase by Drata
+certifications:
+- ISO/IEC 27001:2022
+- GDPR
+- CCPA
+- CPRA
+security_program:
+  isms: ISMS aligned with ISO/IEC 27001:2022
+  penetration_testing: annual third-party penetration testing
+  documents:
+  - Data Processing Agreement (DPA)
+  - Subprocessor list
+  - Technical & Organisational Measures (TOMs)
+  - SIG Lite / SIG security questionnaires
+  security_contact: security@remerge.io
+evidence:
+- source: https://trust.remerge.io/
+  keywords:
+  - iso/iec 27001:2022
+  - trust center
+  - gdpr
+  - ccpa
+  - cpra
