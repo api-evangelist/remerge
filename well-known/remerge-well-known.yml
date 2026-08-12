@@ -1,0 +1,80 @@
+generated: '2026-08-12'
+method: probed
+source: live HTTP probes of every Remerge host named in apis.yml
+description: >-
+  A recorded absence. Remerge serves no /.well-known/ documents on any of its
+  API, docs or marketing hosts — every path probed returned 404. No WellKnown or
+  SecurityTxt pointer is wired in apis.yml as a result: this file documents that
+  the surface is not served, and must not be read as evidence that it is.
+hit_count: 0
+files: []
+
+probes:
+- host: www.remerge.io
+  paths:
+  - {path: /.well-known/security.txt, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/openid-configuration, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/oauth-authorization-server, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/oauth-protected-resource, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/api-catalog, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/ai-plugin.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/agent-card.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/agent.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+
+- host: api.remerge.io
+  role: Reporting API base host
+  paths:
+  - {path: /.well-known/security.txt, status: 404, file: null}
+  - {path: /.well-known/openid-configuration, status: 404, file: null}
+  - {path: /.well-known/oauth-authorization-server, status: 404, file: null}
+  - {path: /.well-known/oauth-protected-resource, status: 404, file: null}
+  - {path: /.well-known/api-catalog, status: 404, file: null}
+  - {path: /.well-known/ai-plugin.json, status: 404, file: null}
+  - {path: /.well-known/agent-card.json, status: 404, file: null}
+  - {path: /.well-known/agent.json, status: 404, file: null}
+
+- host: remerge.events
+  role: Event Tracking API base host
+  paths:
+  - {path: /.well-known/security.txt, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/openid-configuration, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/oauth-authorization-server, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/oauth-protected-resource, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/api-catalog, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/ai-plugin.json, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/agent-card.json, status: 404, content_type: text/plain, file: null}
+  - {path: /.well-known/agent.json, status: 404, content_type: text/plain, file: null}
+
+- host: help.remerge.io
+  role: documentation host (Zendesk Help Center)
+  paths:
+  - {path: /.well-known/security.txt, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/openid-configuration, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/oauth-authorization-server, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/oauth-protected-resource, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/api-catalog, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/ai-plugin.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/agent-card.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+  - {path: /.well-known/agent.json, status: 404, content_type: 'text/html; charset=utf-8', file: null}
+
+false_positives_rejected:
+- host: dashboard.remerge.io
+  behaviour: >-
+    Answers HTTP 200 with the same 741-byte React SPA shell for EVERY path,
+    including /.well-known/agent-card.json, /.well-known/security.txt,
+    /openapi.json and /llms.txt. This is an SPA catch-all, not a served
+    document. Every one of these 200s was rejected — no body parsed as JSON, and
+    none carried AgentCard shape.
+  probed: '2026-08-12'
+
+notes:
+- >-
+  Remerge DOES run a vulnerability disclosure programme and publishes a security
+  contact — but at
+  https://www.remerge.io/remerge-vulnerability-disclosure-policy and
+  https://trust.remerge.io/, not as an RFC 9116 security.txt. See
+  security/remerge-vulnerability-disclosure.yml. The programme is real; the
+  well-known surface for it is not served.
+- >-
+  No OAuth or OpenID Connect metadata exists because neither Remerge API uses
+  OAuth — see authentication/remerge-authentication.yml.

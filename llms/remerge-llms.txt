@@ -1,21 +1,66 @@
 # Remerge
 
-> Remerge is a mobile demand-side platform (DSP) specializing in app retargeting, re-engagement, and user acquisition. It is a managed advertising service (no public developer API); campaigns are run through the Remerge platform with support from its account teams.
+> Remerge (Remerge GmbH, Berlin) is a mobile demand-side platform (DSP) for app retargeting, re-engagement and user acquisition, serving gaming, e-commerce and delivery apps. Onboarding is account-managed rather than self-service, but Remerge publishes two documented HTTP APIs: a JSON Reporting API for pulling campaign performance into a client's BI stack, and an Event Tracking API for forwarding in-app event, attribution, BI and SKAdNetwork data into Remerge.
+
+## APIs
+
+- [Remerge Reporting API](https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API): POST https://api.remerge.io/report. Returns a JSON results array of daily or hourly campaign aggregates. Required params start_date and end_date (YYYY-MM-DD, end_date is exclusive); optional timezone, granularity (hour|day), dimensions (audience, country, campaign, campaign_type, ad, ad_label, platform) and a campaign_type filter (retargeting|install). Not usable from a web browser.
+- [Remerge Event Tracking API](https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding): GET https://remerge.events/event. Single fire-and-forget endpoint that answers HTTP 204 by default. Accepts four documented payload families — in-app event, attribution, BI, and SKAdNetwork.
+- [Attribution Data Forwarding](https://help.remerge.io/hc/en-us/articles/6056005123484-Attribution-Data-Forwarding): is_attributed, partner_attribution_method (click|view), click_id, campaign, label, plus Android install-referrer fields and rejected_* / rejection_reason semantics.
+- [BI Data Forwarding](https://help.remerge.io/hc/en-us/articles/6055918247580-BI-Data-Forwarding): non-app events (whales, churn_risk, click postbacks) flagged with non_app_event=true. Limit requests to 1,000 per second.
+- [SKAdNetwork Data Forwarding](https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding): Apple SKAdNetwork installs and decoded conversion values.
+- [Click & Impression Placeholders](https://help.remerge.io/hc/en-us/articles/360000810894-Click-Impression-Placeholders): the macro catalogue Remerge substitutes into client-registered click and impression template URLs when firing them server-side.
+
+## Authentication
+
+- Reporting API: POST https://api.remerge.io/users/sign_in with dashboard credentials to obtain a user_token, then send `Authorization: Token user_token="...", email="..."` plus Content-Type and Accept of application/json. Invalid tokens return 401.
+- Event Tracking API: mandatory `partner` and `key` query parameters. The key is issued by a Remerge Account Manager.
+- There is no OAuth, no OpenID Connect and no self-service credential issuance. See authentication/remerge-authentication.yml.
+
+## Limits and behaviour
+
+- Only one Reporting API query per user may be in flight; a second returns HTTP 422 "queryID: queryId already exists".
+- Reporting queries should span at most 14 days (one day per request is recommended); broader ranges return HTTP 504.
+- Event Tracking: limit GET requests to 1,000 per second. Forward in-app events in real time and App Open events every 10 minutes.
+- No RateLimit-*, X-RateLimit-* or Retry-After headers are returned by either API.
+- Remerge retains reportable data for six months only.
+- Neither API is versioned, supports idempotency keys, or paginates. Errors are field-scoped message strings, not RFC 9457 problem+json.
+
+## Data conventions
+
+- Revenue in micro currency units (170000 = 0.17); revenue_float for decimal values. Currency ISO 4217, country ISO 3166-1 alpha-2, city UN/LOCODE recommended.
+- Reporting timestamps are ISO 8601 UTC; Event Tracking timestamps are 10-digit Unix epoch seconds.
+- Apple IDFA must be uppercased, Android AAID lowercased, IDFV is iOS-only.
+- URL-encode any parameter containing non-web-safe characters, including the JSON `data` object.
+
+## Documentation
+
+- [Developer Documentation / Data Exchange](https://help.remerge.io/hc/en-us/categories/115000321013-Data-Exchange): the developer-facing category.
+- [API Documentation section](https://help.remerge.io/hc/en-us/sections/115000697994-API-Documentation)
+- [Reporting API section](https://help.remerge.io/hc/en-us/sections/360003940000-Reporting-API)
+- [Help Center](https://help.remerge.io/hc/en-us): full product knowledge base.
+- No public OpenAPI is published. https://api.remerge.io/swagger.json exists as a route but redirects (HTTP 302) to the operator login at https://admin.remerge.io.
+
+## SDKs and tooling
+
+- No official client library exists for either API in any language; every documented integration path is hand-rolled HTTP (curl is the worked example).
+- [uplift-report](https://github.com/remerge/uplift-report): first-party Jupyter notebook that builds an incrementality/uplift report from Remerge raw data exports. Not an API client.
+- Third-party access exists as platform connectors — Singular ships a Remerge data connector that pulls the Reporting API, and Kochava documents campaign cost reporting through it.
 
 ## Company
-- [Remerge](https://www.remerge.io): App retargeting and user-acquisition DSP for gaming, e-commerce, and delivery apps.
-- [Help Center](https://help.remerge.io/hc/en-us): Support and product knowledge base.
+
+- [Remerge](https://www.remerge.io): App retargeting and user-acquisition DSP for gaming, e-commerce and delivery apps.
 - [Blog](https://www.remerge.io/blog-post): The latest news in mobile advertising.
+- [GitHub Organization](https://github.com/remerge): 102 public repositories, largely internal infrastructure and Go utilities.
 
 ## Trust & Security
+
 - [Trust Center](https://trust.remerge.io/): ISO/IEC 27001:2022 ISMS, GDPR, CCPA, CPRA, annual third-party penetration testing (SafeBase by Drata).
-- [Vulnerability Disclosure Policy](https://www.remerge.io/remerge-vulnerability-disclosure-policy): Responsible disclosure; contact security@remerge.io (no paid bug bounty).
+- [Vulnerability Disclosure Policy](https://www.remerge.io/remerge-vulnerability-disclosure-policy): Responsible disclosure; contact security@remerge.io (no paid bug bounty). Note Remerge does not serve /.well-known/security.txt.
 
 ## Legal
+
 - [Service Privacy Policy](https://www.remerge.io/service-privacy-policy)
 - [Website Privacy Policy](https://www.remerge.io/website-privacy-policy)
 - [Terms and Conditions](https://www.remerge.io/terms-and-conditions)
 - [Opt Out of Ads](https://www.remerge.io/opt-out-of-ads)
-
-## Code
-- [GitHub Organization](https://github.com/remerge): 103 public repositories.

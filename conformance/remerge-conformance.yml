@@ -1,0 +1,200 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://trust.remerge.io/ (certifications and security programme),
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+  and the API Documentation section articles (data-format standards),
+  https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding,
+  https://github.com/remerge/go-gdpr (IAB GDPR framework support), and
+  https://www.remerge.io/service-privacy-policy.
+description: >-
+  Which industry and cross-cutting standards Remerge actually conforms to. The
+  pattern is characteristic of adtech: strong conformance to privacy regimes and
+  to the data-format and identifier standards the advertising ecosystem forces
+  on everyone, and essentially no conformance to modern HTTP/API standards —
+  no OAuth, no RFC 9457, no RFC 8594, no OpenAPI.
+
+standards:
+- id: iso-27001
+  name: ISO/IEC 27001:2022
+  conforms: true
+  evidence: >-
+    Trust Center publishes an ISMS aligned with ISO/IEC 27001:2022 plus annual
+    third-party penetration testing. Platform is SafeBase by Drata.
+  source: https://trust.remerge.io/
+  detail_ref: security/remerge-trust-center.yml
+
+- id: gdpr
+  name: EU General Data Protection Regulation
+  conforms: true
+  evidence: >-
+    Trust Center lists GDPR; Remerge publishes a Data Processing Agreement, a
+    subprocessor list and Technical & Organisational Measures. Remerge GmbH is
+    Berlin-based and operates under EU jurisdiction.
+  source: https://trust.remerge.io/
+
+- id: iab-tcf-gdpr
+  name: IAB Europe Transparency & Consent Framework (GDPR signalling)
+  conforms: true
+  confidence: medium
+  evidence: >-
+    Remerge maintains github.com/remerge/go-gdpr, described as "Golang support
+    for the IAB's GDPR framework" — first-party code implementing IAB consent
+    signalling, still active (last pushed 2026-01-26). Consistent with DSP
+    participation in the RTB consent chain, though Remerge publishes no TCF
+    vendor-id claim in its docs.
+  source: https://github.com/remerge/go-gdpr
+
+- id: ccpa-cpra
+  name: California Consumer Privacy Act / California Privacy Rights Act
+  conforms: true
+  evidence: >-
+    Trust Center lists CCPA and CPRA. Remerge operates a public ad opt-out at
+    https://www.remerge.io/opt-out-of-ads.
+  source: https://trust.remerge.io/
+
+- id: skadnetwork
+  name: Apple SKAdNetwork
+  conforms: true
+  evidence: >-
+    Remerge documents a dedicated SKAdNetwork data-forwarding contract accepting
+    Apple postback fields (skan_source_app_id, skan_campaign_id,
+    skan_redownload, skan_postback_id) and decoded conversion values, with
+    partner_match_type hardcoded to skadnetwork.
+  source: https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding
+
+- id: google-play-install-referrer
+  name: Android Google Play Install Referrer API
+  conforms: true
+  evidence: >-
+    The attribution forwarding contract accepts referrer, referrer_click_ts and
+    install_start_ts, and the docs credit the Google Play Install Referrer API
+    documentation as the source of those semantics.
+  source: https://help.remerge.io/hc/en-us/articles/6056005123484-Attribution-Data-Forwarding
+
+- id: iso-4217
+  name: ISO 4217 currency codes
+  conforms: true
+  evidence: The currency parameter and event.cost_currency response field are documented as ISO 4217.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+- id: iso-3166-1-alpha-2
+  name: ISO 3166-1 alpha-2 country codes
+  conforms: true
+  evidence: The country parameter is documented as "ISO alpha 2 country code"; report rows return the same form.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+- id: un-locode
+  name: UN/LOCODE
+  conforms: partial
+  evidence: >-
+    Recommended, not required — "City name. Use UN/LOCODE for standardization."
+    Free-text city values are accepted.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+- id: iso-8601
+  name: ISO 8601 date and time
+  conforms: true
+  evidence: >-
+    Reporting request dates are YYYY-MM-DD and response timestamps are ISO 8601
+    UTC (2017-01-11T00:00:00.000Z). Timezones are IANA Region/City identifiers.
+    Note the Event Tracking API uses 10-digit Unix epoch seconds instead, so the
+    two APIs disagree on time representation.
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+- id: rfc8259-json
+  name: JSON (RFC 8259)
+  conforms: true
+  evidence: >-
+    Reporting responses are JSON; the Event Tracking `data` parameter is a
+    URL-encoded JSON object and the docs cite json.org for the double-quoting rule.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+- id: openapi
+  name: OpenAPI Specification
+  conforms: false
+  evidence: >-
+    No public OpenAPI. https://api.remerge.io/swagger.json exists as a route but
+    302s to the admin login; /openapi.json, /api-docs, /redoc and
+    /v1/openapi.json all 404 (probed 2026-08-12). Nothing published in the
+    GitHub org.
+
+- id: asyncapi
+  name: AsyncAPI
+  conforms: false
+  evidence: >-
+    Remerge operates a real click/impression callback surface but publishes no
+    AsyncAPI or CloudEvents description of it. See asyncapi/remerge-webhooks.yml.
+
+- id: oauth2
+  name: OAuth 2.0
+  conforms: false
+  evidence: >-
+    Neither API uses OAuth. The Reporting API mints a token from an
+    email/password sign-in and presents it in a custom Authorization scheme; the
+    Event Tracking API uses query-string partner/key. No
+    /.well-known/oauth-authorization-server on any host.
+
+- id: oidc
+  name: OpenID Connect
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on all four Remerge hosts.
+
+- id: rfc9457
+  name: 'RFC 9457: Problem Details for HTTP APIs'
+  conforms: false
+  evidence: >-
+    Errors are field-scoped message strings with no type/code member and no
+    application/problem+json content type. See errors/remerge-problem-types.yml.
+
+- id: rfc8594
+  name: 'RFC 8594: Sunset HTTP Header'
+  conforms: false
+  evidence: >-
+    No Sunset or Deprecation headers documented or observed, and no deprecation
+    policy published. See lifecycle/remerge-lifecycle.yml.
+
+- id: rfc9116
+  name: 'RFC 9116: security.txt'
+  conforms: false
+  evidence: >-
+    Remerge runs a real vulnerability disclosure programme but does not serve
+    /.well-known/security.txt on any host (all 404, probed 2026-08-12).
+
+- id: idempotency
+  name: Idempotency keys (draft-ietf-httpapi-idempotency-key-header)
+  conforms: false
+  evidence: >-
+    No Idempotency-Key header or equivalent on either API. The only
+    de-duplication affordance is skan_postback_id, and only for SKAdNetwork
+    payloads. See conventions/remerge-conventions.yml.
+
+- id: pagination
+  name: Cursor or offset pagination
+  conforms: false
+  evidence: >-
+    The Reporting API returns the whole result set for the interval with no
+    limit/offset/cursor parameters; volume is managed by narrowing the date
+    range instead.
+
+- id: fapi
+  name: FAPI
+  conforms: false
+  applicable: false
+  evidence: Not a financial-services API; no FAPI profile applies.
+
+- id: scim
+  name: SCIM
+  conforms: false
+  applicable: false
+  evidence: No user-provisioning API is published.
+
+certifications_summary:
+  published: true
+  certifications:
+  - ISO/IEC 27001:2022
+  - GDPR
+  - CCPA
+  - CPRA
+  trust_center: https://trust.remerge.io/
+  detail_ref: security/remerge-trust-center.yml

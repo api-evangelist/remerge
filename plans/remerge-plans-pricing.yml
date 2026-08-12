@@ -1,0 +1,37 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  Searched https://www.remerge.io/sitemap.xml (no pricing, plans or packages
+  path), probed https://www.remerge.io/pricing and /plans (both 404 on
+  2026-08-12), and read the Help Center API documentation section — no rate
+  card, tier table or self-service checkout exists on any Remerge surface.
+description: >-
+  Remerge publishes no plans and no pricing. It is an account-managed
+  demand-side platform: engagement starts with a "Get in touch" form and pricing
+  is set per advertiser in a commercial agreement, not from a public tier table.
+  This is an honest zero, not a gap in the search.
+plan_count: 0
+plans: []
+
+pricing_model:
+  self_service: false
+  free_tier: false
+  trial: false
+  public_rate_card: false
+  model: >-
+    Programmatic media buying. Cost is documented as a campaign-level buying
+    price in the reporting and macro surfaces — the click/impression macros
+    expose cost_type (e.g. cpc), an amount macro
+    ({{Campaign.BuyingPriceAsMoney.Float32 "USD"}}) and a currency — which
+    confirms a CPC/CPM-style buying model but publishes no rates.
+  entry_point: https://www.remerge.io/get-in-touch
+  api_billing: >-
+    Neither the Reporting API nor the Event Tracking API is separately metered or
+    priced. Both are included capabilities of a Remerge advertiser relationship,
+    and credentials for both are issued by a Remerge Account Manager rather than
+    purchased.
+
+evidence:
+- {url: 'https://www.remerge.io/pricing', status: 404}
+- {url: 'https://www.remerge.io/plans', status: 404}
+- {url: 'https://www.remerge.io/sitemap.xml', status: 200, note: 'enumerated; contains no pricing or plans path in any locale'}

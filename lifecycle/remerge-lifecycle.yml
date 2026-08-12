@@ -1,0 +1,86 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  Searched www.remerge.io (sitemap.xml, /changelog, /release-notes,
+  /product-updates, /status all 404), help.remerge.io via the Zendesk Help
+  Center API (107 articles across 7 categories — no versioning, deprecation or
+  status article), and the github.com/remerge organisation. Retention and query
+  constraints read from
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API.
+description: >-
+  Remerge publishes no API lifecycle contract. There is no version scheme, no
+  deprecation policy, no Sunset/Deprecation header usage, no SLA and no public
+  status page. Change is communicated through the Account Manager relationship.
+  The one hard, published lifecycle fact is a six-month data retention window on
+  reportable data.
+
+versioning:
+  scheme: unversioned
+  current_version: null
+  version_in_path: false
+  version_header: null
+  detail: >-
+    https://api.remerge.io/report and https://remerge.events/event carry no
+    version segment, and no version header is documented. There is no way for a
+    client to pin behaviour.
+
+deprecation:
+  policy_published: false
+  policy_url: null
+  rfc8594_headers: false
+  sunset_header: false
+  deprecation_header: false
+  notice_period: null
+  deprecated_operations: []
+  detail: >-
+    No deprecation policy was found on any Remerge surface. RFC 8594 Sunset and
+    Deprecation headers are not documented and could not be observed — the
+    Reporting API requires credentials, and the Event Tracking API returns a
+    bare 204 with no lifecycle headers (probed 2026-08-12).
+  historical_note: >-
+    Remerge has deprecated a docs surface before without a redirect contract:
+    github.com/remerge/remerge.github.io ("API documentation", covering the
+    reporting API, tracking API and product feed spec) is archived and its pages
+    now contain only "moved here" pointing at help.remerge.io.
+
+sla:
+  published: false
+  uptime_target: null
+  detail: >-
+    No public SLA. Availability commitments, if any, sit in the customer
+    contract — the Terms and Conditions at
+    https://www.remerge.io/terms-and-conditions do not state an uptime figure.
+
+status_page:
+  published: false
+  url: null
+  detail: >-
+    No status page. status.remerge.io does not resolve (NXDOMAIN),
+    www.remerge.io/status returns 404, and no status.io / Statuspage.io /
+    Instatus property was found for the domain. Probed 2026-08-12.
+
+changelog:
+  published: false
+  url: null
+  detail: >-
+    No dated API changelog. www.remerge.io/changelog, /release-notes and
+    /product-updates all 404, the sitemap lists no changelog path, and the Help
+    Center has no release-notes section. Individual help articles carry an
+    updated_at date (the Reporting API article was last updated 2024-11-25, the
+    API Documentation section articles in Feb–Aug 2023), which is the only
+    change signal available.
+
+retention:
+  reportable_data_window: 6 months
+  detail: >-
+    "Remerge stores your data for a limited time frame of six months ONLY."
+    Clients are advised to maintain their own data log. This bounds the
+    Reporting API's addressable history.
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+operational_constraints:
+- >-
+  Reporting queries should cover at most 14 days, and Remerge recommends one day
+  per request; broader ranges fail with 504.
+- >-
+  Only one Reporting API query per user may be in flight at a time.

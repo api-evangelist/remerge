@@ -1,0 +1,84 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+provider: Remerge
+providerId: remerge
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+  (error table: "the query rate limit per user is 1", 504 query-interval
+  guidance) and
+  https://help.remerge.io/hc/en-us/articles/6055918247580-BI-Data-Forwarding
+  ("Limit your GET request to 1k per second").
+docs: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+description: >-
+  Remerge publishes limits as prose inside its Help Center rather than as a
+  rate-limit reference page, and it does not return any RateLimit-* or
+  Retry-After response headers. The Reporting API enforces a concurrency limit
+  of one in-flight query per user and a practical query-window ceiling; the
+  Event Tracking API documents a request-rate ceiling for BI forwarding.
+limit_count: 3
+
+headers:
+  published: false
+  rate_limit_headers: []
+  retry_after: false
+  note: >-
+    No X-RateLimit-*, RateLimit-* or Retry-After headers are documented, and
+    none were observed on an unauthenticated GET to https://remerge.events/event
+    (HTTP 204, probed 2026-08-12). An agent has no runtime throttling signal on
+    either API and must infer exhaustion from the 422 body.
+
+limits:
+- name: Reporting API concurrent queries
+  api: remerge-reporting-api
+  scope: per-user
+  metric: concurrent_requests
+  limit: 1
+  window: concurrent
+  burst: null
+  enforcement_status: 422
+  enforcement_message: 'queryID: queryId already exists'
+  detail: >-
+    A user may have only one Reporting API query in flight. Submitting a second
+    while the first is still processing returns HTTP 422 with a queryID
+    collision message. This is a concurrency gate, not a requests-per-window
+    quota.
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+- name: Reporting API query interval ceiling
+  api: remerge-reporting-api
+  scope: per-request
+  metric: query_window_days
+  limit: 14
+  window: per-request
+  enforcement_status: 504
+  enforcement_message: Gateway Timeout
+  detail: >-
+    Remerge documents that too broad a query interval times out at the web
+    server and advises retrying "with a shorter interval, of 14 days, at the
+    most". The docs separately recommend requesting one day of data at a time.
+    This is a soft ceiling surfaced as a 504, not a counted quota.
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+- name: Event Tracking API request rate
+  api: remerge-event-tracking-api
+  scope: per-partner
+  metric: requests_per_second
+  limit: 1000
+  window: second
+  burst: null
+  enforcement_status: null
+  detail: >-
+    The BI Data Forwarding guide instructs partners to "Limit your GET request
+    to 1k per second". It is published as a client-side obligation; Remerge does
+    not document a server-side rejection status for exceeding it, and the
+    endpoint answers HTTP 204 by default regardless of payload validity.
+  source: https://help.remerge.io/hc/en-us/articles/6055918247580-BI-Data-Forwarding
+
+related_cadence:
+  note: >-
+    Not rate limits, but documented request-frequency expectations on the Event
+    Tracking API — forward all in-app events in real time, and forward App Open
+    events every 10 minutes.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding

@@ -1,0 +1,102 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://help.remerge.io/hc/en-us/articles/360000810894-Click-Impression-Placeholders
+  (the macro catalogue and the server-side forwarding behaviour),
+  https://help.remerge.io/hc/en-us/articles/115002376365-How-to-set-up-postbacks-with-Adjust
+  and
+  https://help.remerge.io/hc/en-us/articles/5028262839826-How-to-set-up-Postbacks-with-AppsFlyer
+  (the inbound postback leg).
+description: >-
+  Remerge's event/callback surface, captured as a webhook catalogue. There is no
+  AsyncAPI document — Remerge publishes none, and none was found on any host or
+  in its GitHub org, so nothing here was fabricated into a spec. What Remerge
+  does operate is a two-way server-to-server callback contract: outbound, it
+  fires client-registered Click and Impression Template URLs with macros
+  substituted; inbound, measurement partners POST/GET attribution postbacks back
+  to the Event Tracking API.
+asyncapi_spec: null
+asyncapi_spec_note: >-
+  Probed https://remerge.events/asyncapi.yaml, /openapi.json and /.well-known/*
+  (all 404 on 2026-08-12) and searched the github.com/remerge org — no event
+  specification is published.
+transport: HTTPS
+encoding: query-string macro substitution into a client-supplied template URL
+delivery_semantics: at-most-once (fire and forget; no documented retry or ack)
+signing: none documented
+subscription_management: >-
+  Not self-service. Click and Impression Template URLs are registered with a
+  Remerge Account Manager, not through an API or dashboard endpoint documented
+  publicly.
+
+outbound:
+  description: >-
+    Remerge substitutes macros into the partner's template URL and calls it
+    server-side when the corresponding ad event occurs.
+  events:
+  - name: click
+    trigger: A user clicks a Remerge-served ad.
+    target: Client/partner-registered Click Template URL
+    payload_style: URL macros
+  - name: impression
+    trigger: A Remerge ad impression is served.
+    target: Client/partner-registered Impression Template URL
+    payload_style: URL macros
+  macros:
+  - {placeholder: '{external_campaign_name_raw}', content: Campaign Name, example: remerge_ios}
+  - {placeholder: '{campaign}', content: Campaign ID, example: '235266'}
+  - {placeholder: '{ad_name}', content: Creative Name (file name), example: creative_banner_320_50.png}
+  - {placeholder: '{ad}', alias: '{creative}', content: Creative ID, example: '34688'}
+  - {placeholder: '{device_id_raw}', content: Google Advertising ID or Apple IDFA, example: DBC04712-89D2-4447-9855-559E49ACF8D7}
+  - {placeholder: '{country}', content: Country, example: de}
+  - {placeholder: '{partner}', content: Partner, example: applovin23}
+  - {placeholder: '{publisher}', content: Publisher app id or package, example: com.gramgames.tenten}
+  - {placeholder: '{click_id}', alias: '{clickid}', content: Click ID unique to the RTB impression slot, example: wCvxiqsvjH34EUCD}
+  - {placeholder: '{{Ad.Label.Name.Encode}}', content: Creative Set / ad label name, example: christmas_2022}
+  cost_macros:
+  - {placeholder: cpc, content: cost_type, example: cpc}
+  - {placeholder: '{{Campaign.BuyingPriceAsMoney.Float32 "USD"}}', content: amount, example: '0.23'}
+  - {placeholder: usd, content: currency, example: 'usd, eur'}
+  client_context:
+    user_agent_and_ip: >-
+      For a client-side Click URL the partner receives the User-Agent and IP
+      directly from the device. For server-side click and impression forwarding
+      Remerge passes the User-Agent header and puts the originating IP in
+      X-Forwarded-For. Remerge explicitly has no separate macros for User-Agent
+      or IP address.
+
+inbound:
+  description: >-
+    The return leg — measurement partners and clients forward attributed events
+    back to Remerge at the Event Tracking API, echoing the click_id, campaign
+    and label they received on the outbound call.
+  endpoint: https://remerge.events/event
+  method: GET
+  response: HTTP 204 (no body, no acknowledgement of acceptance)
+  correlation_key: click_id
+  payload_families:
+  - {name: in-app event, docs: 'https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding'}
+  - {name: attribution, docs: 'https://help.remerge.io/hc/en-us/articles/6056005123484-Attribution-Data-Forwarding'}
+  - {name: BI / non-app event, docs: 'https://help.remerge.io/hc/en-us/articles/6055918247580-BI-Data-Forwarding'}
+  - {name: SKAdNetwork, docs: 'https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding'}
+  documented_partner_integrations:
+  - {partner: Adjust, docs: 'https://help.remerge.io/hc/en-us/articles/115002376365-How-to-set-up-postbacks-with-Adjust'}
+  - {partner: AppsFlyer, docs: 'https://help.remerge.io/hc/en-us/articles/5028262839826-How-to-set-up-Postbacks-with-AppsFlyer'}
+  - {partner: Singular}
+  - {partner: Branch}
+  - {partner: Kochava}
+  - {partner: Airbridge}
+  - {partner: 'IGAWorks (Adbrix Original and Remaster)'}
+  - {partner: mParticle}
+  - {partner: ActionIQ}
+
+gaps:
+- No AsyncAPI or CloudEvents description of either leg.
+- No payload signing, no shared secret on the outbound call, and no replay protection.
+- >-
+  No delivery guarantees, retry policy, or dead-letter behaviour is published
+  for the outbound click/impression calls.
+- >-
+  The inbound leg's 204 is unconditional, so a partner cannot tell from the
+  response whether Remerge accepted the event. The docs direct partners to
+  confirm success with their Account Manager instead.

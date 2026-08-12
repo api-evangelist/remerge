@@ -1,0 +1,230 @@
+generated: '2026-08-12'
+method: derived
+source: >-
+  Derived from the documented field tables in
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+  (response fields + dimensions),
+  https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+  (event parameters),
+  https://help.remerge.io/hc/en-us/articles/6056005123484-Attribution-Data-Forwarding
+  and
+  https://help.remerge.io/hc/en-us/articles/360000810894-Click-Impression-Placeholders
+  (macro catalogue). Remerge publishes no OpenAPI, so relationships were read
+  from documented id-reference fields rather than from $ref links.
+description: >-
+  The entity graph Remerge exposes across its two APIs. It is a reporting/event
+  model, not a CRUD resource model: no entity is individually addressable and
+  none can be created or mutated over the API. Campaigns, ads and audiences are
+  managed in the Remerge dashboard; the APIs only read aggregates of them and
+  write events against them.
+
+caveats:
+- >-
+  Remerge overloads the word "audience". Per its own docs, "Remerge uses the
+  term Audience as a reference to your entire application (unlike in some
+  contexts, where an audience refers to a segment)". The `audience` dimension is
+  an App Store reference, i.e. an App — not a segment.
+- >-
+  There are no documented endpoints for any of these entities. Entity identity
+  is inferred from the id fields Remerge returns and from the click/impression
+  macros it substitutes.
+
+entities:
+- name: ReportRow
+  description: >-
+    One aggregate row from the Reporting API, keyed by timestamp and whichever
+    dimensions were requested. The unit of the response `results` array.
+  addressable: false
+  source_endpoint: POST https://api.remerge.io/report
+  identifier: composite (timestamp + requested dimensions)
+  fields:
+  - {name: timestamp, type: string, format: date-time, description: UTC timestamp of the aggregation bucket}
+  - {name: event.platform, type: string, enum: [ios, android]}
+  - {name: event.country, type: string, format: iso-3166-1-alpha-2, description: RTB geo information}
+  - {name: event.campaign, type: integer, description: internal Remerge campaign id}
+  - {name: event.campaign_name, type: string}
+  - {name: event.campaign_type, type: string, enum: [Install, Impact, Retargeting]}
+  - {name: event.cost_currency, type: string, format: iso-4217}
+  - {name: event.audience, type: string, description: App Store reference — the app, not a segment}
+  - {name: event.ad_id, type: integer}
+  - {name: event.ad_name, type: string, description: unsanitized file name of the image/video asset}
+  - {name: event.ad_label_id, type: integer}
+  - {name: event.ad_label_name, type: string}
+  - {name: event.ad_creative_url, type: string, format: uri, description: placeholder only for dynamic ads}
+  - {name: event.impressions, type: integer}
+  - {name: event.clicks, type: integer}
+  - {name: event.app_open_rate, type: number, description: counted app-opens for clicks, percent}
+  - {name: event.cost, type: number, description: cost in customer currency}
+  - {name: event.conversions, type: integer}
+  - {name: event.ap_conversions, type: integer, description: attributed target conversion events}
+  - {name: event.unique_user, type: integer}
+
+- name: Campaign
+  description: >-
+    A Remerge advertising campaign. Referenced by internal id and external name;
+    created and managed in the dashboard, never over the API.
+  addressable: false
+  identifier: event.campaign (integer)
+  also_known_as:
+  - '{campaign} click/impression macro (Campaign ID)'
+  - '{external_campaign_name_raw} click/impression macro (Campaign Name)'
+  - 'campaign parameter on attribution postbacks (campaign name)'
+  fields:
+  - {name: campaign_id, type: integer}
+  - {name: campaign_name, type: string}
+  - {name: campaign_type, type: string, enum: [Install, Impact, Retargeting]}
+  - {name: cost_currency, type: string, format: iso-4217}
+
+- name: Ad
+  description: A creative asset served within a campaign.
+  addressable: false
+  identifier: event.ad_id (integer)
+  also_known_as:
+  - '{ad} / {creative} click-impression macro (Creative ID)'
+  - '{ad_name} click-impression macro (Creative file name)'
+  fields:
+  - {name: ad_id, type: integer}
+  - {name: ad_name, type: string}
+  - {name: ad_creative_url, type: string, format: uri}
+
+- name: AdLabel
+  description: >-
+    A grouping label applied to creatives — used to distinguish creative sets
+    (e.g. set_1, christmas_2022) in reporting and attribution.
+  addressable: false
+  identifier: event.ad_label_id (integer)
+  also_known_as:
+  - '{{Ad.Label.Name.Encode}} click-impression macro (Creative Set)'
+  - 'label parameter on attribution postbacks (label ID)'
+  fields:
+  - {name: ad_label_id, type: integer}
+  - {name: ad_label_name, type: string}
+
+- name: Audience
+  description: >-
+    An application, identified by its App Store / Google Play reference. Remerge
+    calls this an "audience"; it is the app, not a segment.
+  addressable: false
+  identifier: event.audience / app_id (App Store or Google Play id)
+  fields:
+  - {name: app_id, type: string, description: 'Google Play package or iTunes numeric id, "ID" prefix omitted'}
+
+- name: TrackedEvent
+  description: >-
+    One inbound event forwarded to the Event Tracking API. Four documented
+    variants share this shape — in-app event, attribution, BI (non_app_event),
+    and SKAdNetwork.
+  addressable: false
+  source_endpoint: GET https://remerge.events/event
+  identifier: none (no server-assigned id is returned; response is an empty 204)
+  fields:
+  - {name: app_id, type: string, required: true}
+  - {name: event, type: string, required: true, description: event name, e.g. purchase, add_to_basket, install}
+  - {name: partner, type: string, required: true}
+  - {name: key, type: string, required: true, description: Remerge-issued partner key}
+  - {name: idfa, type: string, description: Apple IDFA, uppercased}
+  - {name: aaid, type: string, description: Android Advertising ID, lowercased}
+  - {name: idfv, type: string, description: iOS vendor id}
+  - {name: ts, type: integer, description: Unix epoch seconds, UTC, 10 digits}
+  - {name: data, type: string, format: url-encoded-json, description: free-form event metadata}
+  - {name: revenue, type: integer, description: micro currency units}
+  - {name: revenue_float, type: number}
+  - {name: currency, type: string, format: iso-4217}
+  - {name: country, type: string, format: iso-3166-1-alpha-2}
+  - {name: city, type: string, description: UN/LOCODE recommended}
+  - {name: country_subdivision, type: string}
+  - {name: zipcode, type: string}
+  - {name: device_name, type: string}
+  - {name: os_name, type: string, enum: [ios, android]}
+  - {name: os_version, type: string}
+  - {name: app_version, type: string}
+  - {name: user, type: string, description: customer user id}
+  - {name: partner_device_id, type: string}
+  - {name: ip, type: string}
+  - {name: language, type: string}
+  - {name: operator, type: string, description: mobile carrier}
+  - {name: sdk, type: string}
+  - {name: non_app_event, type: boolean, description: true marks a BI event rather than an in-app event}
+
+- name: Attribution
+  description: >-
+    An attribution decision forwarded against a TrackedEvent — whether the event
+    is credited to Remerge, and on what engagement.
+  addressable: false
+  identifier: click_id
+  fields:
+  - {name: is_attributed, type: integer, enum: [0, 1], required: true}
+  - {name: partner_attribution_method, type: string, enum: [click, view], required: true}
+  - {name: partner_match_type, type: string, description: 'e.g. deterministic, deep link, referrer, skadnetwork'}
+  - {name: network, type: string, description: attributing network name — Remerge, Facebook, organic}
+  - {name: click_id, type: string, required: true, description: the click id issued by the Remerge click/impression URL}
+  - {name: campaign, type: string, required: true}
+  - {name: creative, type: string}
+  - {name: ad, type: string, description: ad label name}
+  - {name: label, type: string, required: true, description: label id}
+  - {name: referrer, type: string, description: Android install referrer URL}
+  - {name: referrer_click_ts, type: integer}
+  - {name: install_start_ts, type: integer}
+  - {name: rejection_reason, type: string, description: 'set on rejected_* events, e.g. CTIT anomalies'}
+  - {name: rejection_sub_reason, type: string}
+  - {name: rejection_sub_value, type: string}
+
+- name: SKAdNetworkPostback
+  description: Apple SKAdNetwork install/conversion-value postback forwarded to Remerge.
+  addressable: false
+  identifier: skan_postback_id
+  fields:
+  - {name: skan_postback_id, type: string, description: unique id for de-duplication}
+  - {name: skan_source_app_id, type: string, description: publisher app id from the Apple postback}
+  - {name: skan_campaign_id, type: string}
+  - {name: skan_redownload, type: integer, enum: [0, 1]}
+  - {name: postback_type, type: string, description: 'hardcoded per partner, e.g. mc_skan'}
+  - {name: partner_match_type, type: string, const: skadnetwork}
+
+- name: ClickImpressionEngagement
+  description: >-
+    The click or impression Remerge fires server-side to a partner-supplied
+    template URL, with macros substituted. The origin of every click_id later
+    used for attribution.
+  addressable: false
+  identifier: '{click_id}'
+  fields:
+  - {name: click_id, type: string, description: unique to the impression slot offered by the RTB ecosystem}
+  - {name: device_id_raw, type: string, description: GAID or IDFA}
+  - {name: publisher, type: string, description: publisher app id/package}
+  - {name: partner, type: string}
+  - {name: country, type: string}
+  - {name: cost_type, type: string, description: 'e.g. cpc'}
+  - {name: amount, type: number}
+  - {name: currency, type: string}
+  detail_ref: asyncapi/remerge-webhooks.yml
+
+relationships:
+- {from: ReportRow, to: Campaign, type: belongs_to, via: event.campaign}
+- {from: ReportRow, to: Ad, type: belongs_to, via: event.ad_id}
+- {from: ReportRow, to: AdLabel, type: belongs_to, via: event.ad_label_id}
+- {from: ReportRow, to: Audience, type: belongs_to, via: event.audience}
+- {from: Campaign, to: Ad, type: has_many, via: event.campaign}
+- {from: Campaign, to: ReportRow, type: has_many, via: event.campaign}
+- {from: Ad, to: AdLabel, type: belongs_to, via: event.ad_label_id}
+- {from: Ad, to: ReportRow, type: has_many, via: event.ad_id}
+- {from: Audience, to: Campaign, type: has_many, via: app_id}
+- {from: Audience, to: TrackedEvent, type: has_many, via: app_id}
+- {from: TrackedEvent, to: Audience, type: belongs_to, via: app_id}
+- {from: TrackedEvent, to: Attribution, type: has_one, via: click_id}
+- {from: Attribution, to: ClickImpressionEngagement, type: belongs_to, via: click_id}
+- {from: Attribution, to: Campaign, type: belongs_to, via: campaign}
+- {from: Attribution, to: AdLabel, type: belongs_to, via: label}
+- {from: SKAdNetworkPostback, to: Audience, type: belongs_to, via: app_id}
+- {from: SKAdNetworkPostback, to: TrackedEvent, type: has_one, via: skan_postback_id}
+- {from: ClickImpressionEngagement, to: Campaign, type: belongs_to, via: '{campaign}'}
+- {from: ClickImpressionEngagement, to: Ad, type: belongs_to, via: '{ad}'}
+- {from: ClickImpressionEngagement, to: AdLabel, type: belongs_to, via: '{{Ad.Label.Name.Encode}}'}
+
+id_conventions:
+  prefixes: none
+  detail: >-
+    Remerge uses bare integers for campaign, ad and ad-label ids, and external
+    App Store / Google Play identifiers for apps. There are no typed or prefixed
+    ids, so an id is not self-describing — an agent must track which dimension
+    an integer came from.

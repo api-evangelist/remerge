@@ -1,0 +1,107 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+  (Reporting API authorization section) and
+  https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+  (Event Tracking API partner/key parameters). Remerge publishes no OpenAPI, so
+  this profile was read from the provider's own Help Center documentation rather
+  than derived from securitySchemes.
+docs: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+description: >-
+  Remerge runs two separately-authenticated HTTP surfaces. The Reporting API
+  uses a session-style token minted by a sign-in request with dashboard
+  credentials and presented in a custom Authorization header. The Event Tracking
+  API is authorized with a partner name plus a Remerge-issued key carried as
+  query parameters on every GET.
+
+summary:
+  types:
+  - http
+  - apiKey
+  oauth2: false
+  openid_connect: false
+  mutual_tls: false
+  self_service_credentials: false
+  credential_issuance: >-
+    Account-managed. Dashboard logins for the Reporting API and partner keys for
+    the Event Tracking API are issued by a Remerge Account Manager; there is no
+    public self-service key generation.
+
+schemes:
+- name: reportingToken
+  api: remerge-reporting-api
+  type: http
+  scheme: custom-token
+  in: header
+  header: Authorization
+  format: 'Token user_token="<user_token>", email="<account email>"'
+  description: >-
+    Custom token scheme on the Reporting API. The header carries two quoted
+    parameters — the user_token returned by the sign-in call and the account
+    email that token belongs to.
+  token_acquisition:
+    endpoint: https://api.remerge.io/users/sign_in
+    method: POST
+    request_headers:
+      Content-Type: application/json
+      Accept: application/json
+    request_body_shape: '{"user": {"email": "<email>", "password": "<password>"}}'
+    response_fields:
+    - email
+    - token
+    - user_id
+    - user_name
+    - user_token
+    note: >-
+      The response returns both `token` and `user_token`; the documented
+      Authorization header uses `user_token`. Credentials are the same dashboard
+      login used at admin.remerge.io and are issued by an Account Manager.
+  required_companion_headers:
+  - Content-Type: application/json
+  - Accept: application/json
+  failure_status: 401
+  failure_message: Unauthorized — the provided Authorization token was invalid
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+- name: partnerKey
+  api: remerge-event-tracking-api
+  type: apiKey
+  in: query
+  parameter_names:
+  - partner
+  - key
+  description: >-
+    The Event Tracking API authorizes each GET with a `partner` value (the
+    tracking partner / client name) and a `key` value issued by Remerge. Both
+    are mandatory on every documented payload family (in-app event, attribution,
+    BI, SKAdNetwork).
+  example_shape: >-
+    https://remerge.events/event?app_id=<app_id>&event=<event>&partner=<yourname>&key=<yourkey>&...
+  issuance: Partner key is provided by Remerge (per the docs, "Partner's key (provided by Remerge)").
+  transport_warning: >-
+    The key travels in the query string of a GET request, so it is exposed to
+    proxy logs, referrer headers and server access logs. This is inherent to the
+    documented design, not a misconfiguration observed in this probe.
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+observations:
+- id: swagger-gated
+  detail: >-
+    https://api.remerge.io/swagger.json and https://api.remerge.io/docs both
+    exist as routes but answer HTTP 302 to https://admin.remerge.io — the API
+    describes itself behind the operator login. Every other spec path on that
+    host (/openapi.json, /api-docs, /redoc, /v1/openapi.json) answers 404, so no
+    public machine-readable contract could be captured.
+  probed: '2026-08-12'
+  evidence:
+  - url: https://api.remerge.io/swagger.json
+    status: 302
+  - url: https://api.remerge.io/openapi.json
+    status: 404
+- id: no-oauth
+  detail: >-
+    No OAuth 2.0 or OpenID Connect surface. /.well-known/oauth-authorization-server
+    and /.well-known/openid-configuration return 404 on www.remerge.io,
+    api.remerge.io and remerge.events.
+  probed: '2026-08-12'

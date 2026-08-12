@@ -1,4 +1,4 @@
-generated: '2026-07-21'
+generated: '2026-08-12'
 method: probed
 source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
 hosts:
@@ -8,14 +8,46 @@ hosts:
   cert_expires: Oct  5 12:17:47 2026 GMT
   hsts: true
   hsts_max_age: 31536000
+- host: help.remerge.io
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct  3 23:43:49 2026 GMT
+  hsts: true
+  hsts_max_age: 259200
+- host: api.remerge.io
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Mar 20 23:59:59 2027 GMT
+  hsts: null
+- host: remerge.events
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Mar 20 23:59:59 2027 GMT
+  cert_issuer: DigiCert Global G2 TLS RSA SHA256 2020 CA1
+  hsts: false
+  note: >-
+    Event Tracking API host. Added by hand on 2026-08-12 — probe-domain-security.py
+    walks apis.yml/OpenAPI hosts under the primary domain and skipped this
+    second registrable domain. Values are live probes of remerge.events.
 domains:
+- domain: remerge.events
+  dnssec: false
+  caa:
+  - 0 issue "letsencrypt.org"
+  - 0 issue "pki.goog; cansignhttpexchanges=yes"
+  - 0 issue "amazon.com"
+  - 0 issue "digicert.com"
+  spf: true
+  spf_record: v=spf1 -all
+  dmarc: true
+  dmarc_policy: reject
 - domain: remerge.io
   dnssec: true
   caa:
-  - 0 issue "amazon.com"
-  - 0 issue "pki.goog; cansignhttpexchanges=yes"
   - 0 issue "digicert.com"
+  - 0 issue "amazon.com"
   - 0 issue "letsencrypt.org"
+  - 0 issue "pki.goog; cansignhttpexchanges=yes"
   spf: true
   dmarc: true
   dmarc_policy: reject

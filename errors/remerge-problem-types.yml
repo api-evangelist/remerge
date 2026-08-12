@@ -1,0 +1,125 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+  — the "List of Potential Errors" table. Transcribed from the provider's own
+  documentation; Remerge publishes no OpenAPI, so nothing here was derived from
+  a spec.
+docs: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+description: >-
+  Documented error responses for the Remerge Reporting API. Remerge does not use
+  RFC 9457 problem+json — errors come back as a plain JSON message keyed to the
+  offending field, and there is no stable machine-readable error `type` or
+  `code` to branch on. The Event Tracking API publishes no error catalog at all.
+format: provider-specific
+rfc9457: false
+content_type: application/json
+error_count: 8
+
+envelope:
+  shape: >-
+    Field-scoped message strings, e.g. "start_date: Format YYYY-MM-DD required".
+    No documented `type`, `code`, `detail` or `instance` members, and no
+    documented error identifier an agent can match on other than the HTTP status
+    plus the message text.
+  machine_readable_code: false
+
+problem_types:
+- status: 200
+  title: OK
+  detail: Query results returned as JSON.
+  success: true
+  remediation: null
+
+- status: 401
+  title: Unauthorized
+  detail: The provided Authorization token was invalid.
+  category: authentication
+  retryable: false
+  remediation: >-
+    Re-issue the sign-in request against https://api.remerge.io/users/sign_in
+    and resend with the fresh user_token and the matching account email in the
+    Authorization header.
+
+- status: 422
+  title: 'start_date: Format YYYY-MM-DD required'
+  detail: Start date ill-formed.
+  category: validation
+  field: start_date
+  retryable: false
+  remediation: Send start_date as an ISO YYYY-MM-DD calendar date.
+
+- status: 422
+  title: 'end_date: Format YYYY-MM-DD required'
+  detail: End date ill-formed.
+  category: validation
+  field: end_date
+  retryable: false
+  remediation: Send end_date as an ISO YYYY-MM-DD calendar date.
+
+- status: 422
+  title: 'start_date: must be a valid date'
+  detail: No real date provided, e.g. 2015-33-09.
+  category: validation
+  field: start_date
+  retryable: false
+  remediation: Validate the date is a real calendar date before sending.
+
+- status: 422
+  title: 'end_date: must be a valid date'
+  detail: No real date provided, e.g. 2015-33-09.
+  category: validation
+  field: end_date
+  retryable: false
+  remediation: Validate the date is a real calendar date before sending.
+
+- status: 422
+  title: 'end_date: end date must be greater or equal to the start date'
+  detail: The end date is earlier than the start date.
+  category: validation
+  field: end_date
+  retryable: false
+  remediation: >-
+    Order the range so end_date >= start_date. Note Remerge's exclusive-end
+    convention — to read a single day, set end_date to the following day.
+
+- status: 422
+  title: 'queryID: queryId already exists'
+  detail: >-
+    The user has already sent a request which is still processed by the API —
+    the query rate limit per user is 1.
+  category: rate-limit
+  retryable: true
+  remediation: >-
+    Serialize Reporting API calls per user. Wait for the in-flight query to
+    return before submitting the next one. No Retry-After header is returned, so
+    back off on your own schedule.
+  see_also: rate-limits/remerge-rate-limits.yml
+
+- status: 504
+  title: Gateway Timeout
+  detail: >-
+    The request took too long for the web server to process. Typically caused by
+    too broad a query interval.
+  category: server
+  retryable: true
+  remediation: >-
+    Retry with a shorter interval — Remerge documents 14 days as the maximum,
+    and recommends requesting a single day at a time.
+  see_also: rate-limits/remerge-rate-limits.yml
+
+empty_result_behavior:
+  detail: >-
+    A valid query with no data in the interval is not an error: the API returns
+    HTTP 200 with an empty results array and "counts: 0".
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+gaps:
+- >-
+  The Event Tracking API (remerge.events/event) answers HTTP 204 by default
+  regardless of whether the payload was accepted. The docs say to "reach out to
+  your Remerge Account Manager to ensure your request's success" — there is no
+  error signal a client can act on programmatically. Confirmed live: an
+  unauthenticated GET to https://remerge.events/event returned 204 on 2026-08-12.
+- No 400, 403, 404, 429 or 5xx behaviour is documented for either API beyond the
+  rows above.

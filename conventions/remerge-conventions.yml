@@ -1,0 +1,158 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API,
+  https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding,
+  https://help.remerge.io/hc/en-us/articles/6056005123484-Attribution-Data-Forwarding,
+  https://help.remerge.io/hc/en-us/articles/6055918247580-BI-Data-Forwarding,
+  https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding.
+  Read from the provider's Help Center; Remerge publishes no OpenAPI.
+description: >-
+  Cross-cutting request/response semantics for Remerge's two HTTP APIs. These
+  are two quite different contracts sharing one brand: a POST-with-query-string
+  reporting API returning JSON, and a fire-and-forget GET ingestion endpoint
+  that always answers 204. Neither is versioned, neither supports idempotency
+  keys, and neither paginates.
+
+apis:
+  reporting:
+    base_url: https://api.remerge.io
+    style: >-
+      REST-ish over HTTPS. Parameters travel in the query string but the
+      documented request method is POST, and the response is JSON.
+    content_type: application/json
+    accept: application/json
+  event_tracking:
+    base_url: https://remerge.events
+    style: >-
+      Single-endpoint GET pixel/postback. All data is query-string encoded; the
+      response is an empty HTTP 204 with no body.
+    content_type: none (query-string encoded GET)
+
+authentication:
+  reporting: >-
+    Custom Authorization header — Token user_token="…", email="…" — with the
+    token minted by POST /users/sign_in using dashboard credentials.
+  event_tracking: >-
+    partner + key query parameters issued by a Remerge Account Manager.
+  detail: authentication/remerge-authentication.yml
+
+idempotency:
+  supported: false
+  mechanism: null
+  detail: >-
+    No Idempotency-Key header, no client-supplied request identifier, and no
+    documented replay semantics on either API. On the Event Tracking API the
+    only de-duplication affordance is domain-specific: skan_postback_id, "a
+    unique id to be able to de-duplicate the unique event postbacks", and only
+    for SKAdNetwork payloads. A retried in-app event or attribution postback is
+    a new event. The Reporting API's queryID is server-assigned and used to
+    reject concurrent queries (422), not to make a retry safe.
+  source: https://help.remerge.io/hc/en-us/articles/6056007052060-SKAdNetwork-Data-Forwarding
+
+pagination:
+  style: none
+  detail: >-
+    The Reporting API returns the full results array for the requested interval
+    plus a count element. There are no limit/offset/cursor parameters. Scale is
+    managed by narrowing the date range and the dimensions list — Remerge
+    recommends one day per request — and an over-broad range fails with 504
+    rather than paginating.
+  response_fields:
+    results: array of result rows
+    counts: integer element count
+
+filtering_and_aggregation:
+  request_params:
+    start_date: 'Required. YYYY-MM-DD.'
+    end_date: 'Required. YYYY-MM-DD. Exclusive — to read a single day, set end_date to the next day.'
+    timezone: 'Optional. Region/City form, e.g. Asia/Singapore. Defaults to UTC.'
+    granularity: 'Optional. hour | day.'
+    dimensions: >-
+      Optional. Comma-separated. Defaults to audience, country, campaign,
+      campaign_type, ad. Available: audience, country, campaign, campaign_type,
+      ad, ad_label, platform. Omitting it returns all potential dimensions.
+    campaign_type: 'Optional filter. retargeting | install.'
+  detail: >-
+    The dimensions parameter is the closest thing to sparse-fieldset / field
+    selection either API offers; there is no expansion mechanism.
+
+metadata:
+  supported: partial
+  detail: >-
+    The Event Tracking API accepts a free-form `data` parameter carrying a
+    URL-encoded JSON object of key/value pairs (product ids, quantities, prices,
+    keyword arrays). Strings must be double-quoted per JSON. This is the only
+    customer-extensible field; the Reporting API has no metadata surface.
+  example: 'data={"product_id":"sdf235235dfw3131","cv_type":0}'
+  source: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
+
+request_tracing:
+  client_correlation_id: false
+  detail: >-
+    No documented request-id convention. api.remerge.io does emit an
+    `x-request-id` response header (observed 2026-08-12) and an `x-runtime`
+    timing header — Rails defaults — but neither is documented as a supported
+    correlation handle, and remerge.events returns no such header on its 204.
+
+versioning:
+  scheme: unversioned
+  current_version: null
+  detail: >-
+    No version segment in either base path, no version header, no dated version
+    pinning. https://api.remerge.io/report and https://remerge.events/event are
+    the only documented paths. Changes are communicated through the Account
+    Manager relationship rather than a version contract.
+  detail_ref: lifecycle/remerge-lifecycle.yml
+
+error_envelope:
+  format: provider-specific
+  rfc9457: false
+  shape: 'Field-scoped message strings, e.g. "start_date: Format YYYY-MM-DD required".'
+  statuses_documented: [200, 401, 422, 504]
+  detail: errors/remerge-problem-types.yml
+
+rate_limit_signaling:
+  headers: none
+  detail: >-
+    No RateLimit-*, X-RateLimit-* or Retry-After headers. Reporting API
+    concurrency exhaustion surfaces as a 422 with a queryID collision message;
+    the Event Tracking API's 1k requests/second ceiling is published as a
+    client-side obligation with no server-side signal.
+  detail_ref: rate-limits/remerge-rate-limits.yml
+
+data_conventions:
+  timestamps: >-
+    Event Tracking uses 10-digit Unix epoch seconds in UTC (`ts`,
+    `referrer_click_ts`, `install_start_ts`). Reporting returns ISO 8601 UTC
+    timestamps, e.g. 2017-01-11T00:00:00.000Z.
+  currency: ISO 4217 codes.
+  money: >-
+    `revenue` is expressed in micro currency units to avoid float error
+    (170000 = 0.17). `revenue_float` is the decimal alternative for callers
+    without sub-cent values.
+  country: ISO 3166-1 alpha-2.
+  city: UN/LOCODE recommended for standardization.
+  device_ids: >-
+    Apple IDFA must be uppercased; Android Advertising ID (aaid) must be
+    lowercased; IDFV is iOS-only.
+  encoding: >-
+    Callers must URL-encode any parameter containing non-web-safe characters —
+    explicitly including the JSON `data` object and operator names (MTS%20RUS,
+    AT%26T).
+
+retention:
+  window: 6 months
+  detail: >-
+    Remerge stores reportable data for six months only and advises clients to
+    maintain their own log. This is a hard constraint on the Reporting API's
+    addressable range, not a policy footnote.
+  source: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
+
+access_notes:
+- >-
+  The Reporting API is explicitly not usable from a web browser — the docs
+  direct clients to curl or their own API client.
+- >-
+  There is no CORS/browser story, no sandbox or test mode, and no self-service
+  credential issuance on either API.

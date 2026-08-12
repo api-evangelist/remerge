@@ -1,0 +1,90 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  Searched registry.npmjs.org (text search "remerge"), pypi.org, rubygems.org,
+  the github.com/remerge organisation (102 public repositories enumerated via
+  the GitHub API) and the Remerge Help Center API documentation section. No
+  registry publishes a Remerge-authored client for either the Reporting API or
+  the Event Tracking API.
+description: >-
+  Remerge ships no official SDK or client library for its own APIs. The Help
+  Center integration guidance is explicit about this — the Reporting API "can
+  ONLY be accessed via the Terminal (or by an API client)", with curl as the
+  worked example. The company's GitHub org is large but is almost entirely
+  infrastructure forks, Ansible roles and Go utilities used internally, not
+  consumer-facing clients.
+official_sdk_count: 0
+package_count: 1
+
+packages:
+- name: uplift-report
+  official: true
+  first_party: true
+  registry: github
+  registry_url: null
+  repository: https://github.com/remerge/uplift-report
+  language: Python
+  version: null
+  published: null
+  version_note: >-
+    Not published to PyPI (pypi.org/pypi/uplift-report/json returns 404, probed
+    2026-08-12) and the repository publishes no tags or releases, so there is no
+    registry metadata endpoint to read a version or release date from. Last
+    commit activity 2024-04-22 per the GitHub API. Distribution is "open this
+    notebook in Google Colab", which means a consumer cannot pin a version
+    either.
+  kind: analysis notebook
+  description: >-
+    A Jupyter notebook that generates an incrementality/uplift report from
+    Remerge-provided raw data, plus uplift_group_assignment.py containing
+    Remerge's test/control group assignment algorithm. It consumes exported raw
+    data files, not the Reporting API — it is a measurement tool, not an API
+    client.
+  api: null
+  note: >-
+    Included because it is genuinely first-party developer-facing tooling, but
+    it does NOT wrap either Remerge API and should not be read as SDK coverage.
+
+excluded_candidates:
+- name: '@remrg/cli'
+  registry: npm
+  version: 1.2.1
+  published: '2026-08-12'
+  reason: >-
+    NOT Remerge. Published under the npm user "stateless-studio" with no
+    repository, no homepage and a one-word description ("remrg cli"). Nothing
+    ties it to Remerge GmbH or github.com/remerge. Name-similarity only —
+    excluded under the ownership rule.
+- name: remerge
+  registry: npm
+  version: 0.0.8
+  published: '2016-03-21'
+  reason: >-
+    NOT Remerge GmbH. A state-management utility ("State simplified.") from
+    github.com/siawyoung/remerge. Unrelated project that happens to share the
+    name.
+- name: micro-http-client
+  registry: npm
+  version: 0.0.8
+  published: '2017-05-29'
+  repository: https://github.com/remerge/micro-http-client
+  reason: >-
+    Genuinely published by the Remerge GitHub org (and its most-starred repo at
+    55 stars), but it is a generic Fetch API wrapper for request/response
+    processing — it is not a client for the Remerge APIs and carries no Remerge
+    endpoints, auth or models. Last published 2017-05-29; excluded from the SDK
+    count because counting it would misrepresent Remerge's API ergonomics.
+
+gaps:
+- >-
+  No client library exists in any language for the Reporting API or the Event
+  Tracking API. Every documented integration path is hand-rolled HTTP.
+- >-
+  Because there is no first-party SDK, the usual package-decay signal (a client
+  whose last release predates the API it wraps) is unavailable for this provider.
+- >-
+  Third-party coverage exists only as platform connectors rather than libraries
+  — Singular ships a Remerge data connector that pulls the Reporting API on the
+  customer's behalf
+  (https://help.remerge.io/hc/en-us/articles/115001993953-Remerge-as-a-Data-Connector),
+  and Kochava documents campaign cost reporting via the same API.
