@@ -36,7 +36,7 @@ x-tier-reason: >-
   registered. The earlier "no public developer API" reading was wrong — the
   contract discovery step surfaced the Reporting API and Event Tracking API in
   the Zendesk Help Center's Developer Documentation category.
-specificationVersion: '0.20'
+specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-08-12'
 tags:
