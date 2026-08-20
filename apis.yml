@@ -101,6 +101,13 @@ apis:
   baseURL: https://remerge.events
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/remerge.png
   tags:
+  - Event
+  - Tracking
+  - Attribution
+  - Mobile
+  - SKAdNetwork
+  - Advertising
+  tags_raw:
   - Events
   - Tracking
   - Attribution
