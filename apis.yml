@@ -23,30 +23,24 @@ accessModel:
   method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/remerge.png
 name: Remerge
-description: >-
-  Remerge is a mobile demand-side platform (DSP) specializing in app retargeting,
-  re-engagement, and user acquisition for mobile apps. The Berlin-based company
-  (Remerge GmbH) helps advertisers in gaming, e-commerce, and delivery build
-  in-app audience segments, run programmatic re-engagement and acquisition
-  campaigns across millions of ad placements, and validate results with
-  incrementality measurement. Onboarding is account-managed rather than
-  self-service, but Remerge does publish two documented HTTP APIs: a JSON
-  Reporting API at api.remerge.io for pulling daily campaign performance into a
-  client's BI stack, and an Event Tracking API at remerge.events for forwarding
-  in-app event, attribution, BI and SKAdNetwork data into Remerge. It operates
-  an ISO/IEC 27001:2022-aligned ISMS and publishes a public Trust Center and
-  vulnerability disclosure policy.
+description: 'Remerge is a mobile demand-side platform (DSP) specializing in app retargeting, re-engagement,
+  and user acquisition for mobile apps. The Berlin-based company (Remerge GmbH) helps advertisers in gaming,
+  e-commerce, and delivery build in-app audience segments, run programmatic re-engagement and acquisition
+  campaigns across millions of ad placements, and validate results with incrementality measurement. Onboarding
+  is account-managed rather than self-service, but Remerge does publish two documented HTTP APIs: a JSON
+  Reporting API at api.remerge.io for pulling daily campaign performance into a client''s BI stack, and
+  an Event Tracking API at remerge.events for forwarding in-app event, attribution, BI and SKAdNetwork
+  data into Remerge. It operates an ISO/IEC 27001:2022-aligned ISMS and publishes a public Trust Center
+  and vulnerability disclosure policy.'
 url: https://raw.githubusercontent.com/api-evangelist/remerge/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
 - point-nine
 x-tier: profiled
-x-tier-reason: >-
-  Upgraded from stub 2026-08-12: two documented public HTTP APIs were found and
-  registered. The earlier "no public developer API" reading was wrong — the
-  contract discovery step surfaced the Reporting API and Event Tracking API in
-  the Zendesk Help Center's Developer Documentation category.
+x-tier-reason: 'Upgraded from stub 2026-08-12: two documented public HTTP APIs were found and registered.
+  The earlier "no public developer API" reading was wrong — the contract discovery step surfaced the Reporting
+  API and Event Tracking API in the Zendesk Help Center''s Developer Documentation category.'
 specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-08-12'
@@ -69,18 +63,14 @@ tags_raw:
 - User Acquisition
 - Marketing
 apis:
-- aid: remerge-reporting-api
+- aid: remerge:remerge-reporting-api
   name: Remerge Reporting API
-  description: >-
-    JSON reporting API that lets Remerge advertisers pull daily (or hourly)
-    campaign performance for their active campaigns into their own BI systems.
-    A POST to /report with a start_date and end_date returns a results array
-    aggregated across up to seven dimensions (audience, country, campaign,
-    campaign_type, ad, ad_label, platform) with impressions, clicks, cost,
-    conversions, attributed conversions, app-open rate and unique users.
-    Authorization is a token obtained from a sign-in request against the same
-    host using dashboard credentials. Remerge retains reportable data for six
-    months only.
+  description: JSON reporting API that lets Remerge advertisers pull daily (or hourly) campaign performance
+    for their active campaigns into their own BI systems. A POST to /report with a start_date and end_date
+    returns a results array aggregated across up to seven dimensions (audience, country, campaign, campaign_type,
+    ad, ad_label, platform) with impressions, clicks, cost, conversions, attributed conversions, app-open
+    rate and unique users. Authorization is a token obtained from a sign-in request against the same host
+    using dashboard credentials. Remerge retains reportable data for six months only.
   humanURL: https://help.remerge.io/hc/en-us/articles/115003440434-Remerge-Reporting-API
   baseURL: https://api.remerge.io
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/remerge.png
@@ -106,17 +96,14 @@ apis:
     url: conventions/remerge-conventions.yml
   - type: DataModel
     url: data-model/remerge-data-model.yml
-- aid: remerge-event-tracking-api
+- aid: remerge:remerge-event-tracking-api
   name: Remerge Event Tracking API
-  description: >-
-    Server-to-server ingestion API that Remerge clients and measurement partners
-    use to forward data into the Remerge platform. A single GET endpoint at
-    remerge.events/event accepts four documented payload families: in-app event
-    data, attribution data (with is_attributed, click_id, campaign and rejection
-    reasons), BI data flagged with non_app_event=true, and SKAdNetwork installs
-    with decoded conversion values. Requests are authorized with a partner name
-    and a Remerge-issued key passed as query parameters, and the endpoint
-    answers HTTP 204 by default.
+  description: 'Server-to-server ingestion API that Remerge clients and measurement partners use to forward
+    data into the Remerge platform. A single GET endpoint at remerge.events/event accepts four documented
+    payload families: in-app event data, attribution data (with is_attributed, click_id, campaign and
+    rejection reasons), BI data flagged with non_app_event=true, and SKAdNetwork installs with decoded
+    conversion values. Requests are authorized with a partner name and a Remerge-issued key passed as
+    query parameters, and the endpoint answers HTTP 204 by default.'
   humanURL: https://help.remerge.io/hc/en-us/articles/6078711583260-Event-Data-Forwarding
   baseURL: https://remerge.events
   image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/remerge.png
